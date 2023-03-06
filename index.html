@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Canvas Wheel - Bunyamin BAYAR</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/main.css" type="text/css" />
+    <script type="text/javascript" src="assets/js/winwheel.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+</head>
+
+<body>
+
+    <div class="canvasBox">
+        <div class="wheelPin"></div>
+        <div class="spin" id="spin_button" onClick="startSpin();">Spin</div>
+        <canvas id="canvas" width="434" height="434">
+            <p>
+                Sorry, your browser doesn't support canvas. Please try another.
+            </p>
+        </canvas>
+    </div>
+
+    <!-- Message and confetti -->
+    <div class="winContainer">
+        <canvas id="confetti"></canvas>
+        <!-- win Message -->
+        <div class="winMessageBox">
+            <h1 class="messageHeader">Welcome to Wheel of Fortune</h1>
+            <div class="credits">Your Credits : <span class="userCredits">0</span><span class="coin"></span></div>
+            <div class="startGame startGameFunc">Start</div>
+            <div style="display: none;" class="startGame playAgainFunc" onClick="resetWheel(); return false;">Play Again - <span id="countDown">5</span></div>
+        </div>
+    </div>
+    
+    <script src="assets/js/confetti.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
