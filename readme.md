@@ -1,7 +1,14 @@
-This code is a JavaScript code that creates a wheel of fortune using the Winwheel.js library. It defines an array of segments that represent the different prizes, creates a Winwheel object, and specifies the parameters such as the number of segments, the animation type, and the outer and inner radii of the wheel.
+Demo
+https://solodevs.com/wheel/
 
-The code also defines a function called calculatePrize() that calculates the prize won by the user. This function uses the weights of the segments to determine the probability of winning a particular prize. It then generates a random number between 0 and the total weight of all the segments, and finds the segment that corresponds to the generated number. The winning segment is then highlighted on the wheel, and the wheel is animated to stop at the winning segment.
+This code is a JavaScript implementation of a spinning wheel game. The game involves spinning a wheel and landing on a randomly selected prize or reward.
 
-The code also defines functions to play a tick sound when the wheel is spinning, and to start the wheel animation when the user clicks a "start game" button. The code also defines variables to keep track of the wheel's power and spinning status.
+The code uses an array of objects called segments to define the different segments on the wheel. Each object in the segments array contains two properties: text and weight. The text property specifies the text to display on the segment, while the weight property specifies the weight of the segment. The weight of each segment determines the probability of landing on that segment when the wheel is spun.
 
-After you spin the wheel and win the prize, wait 5 seconds or play again immediately.
+The startSpin function is called when the user clicks the "spin" button. This function sets the spinWheel flag to true, adds a CSS class to the wheel element to start the animation, and calls the findSegmentWeight function to determine which segment the wheel should stop on.
+
+The findSegmentWeight function calculates the total weight of all segments, generates a random number between 0 and the total weight, and then determines which segment corresponds to the random number based on the cumulative weights of the segments.
+
+Once the winning segment has been determined, the wheel is stopped by removing the CSS class that triggers the animation, and the winning segment is highlighted. The user's credit balance is then incremented by the value of the winning segment, and a message is displayed indicating how many credits were won.
+
+The playAgain function is called after a delay to reset the game for the next round.

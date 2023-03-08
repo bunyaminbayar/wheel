@@ -1,20 +1,23 @@
 
 const segments = [
-    { 'fillStyle': '#fc5c65', 'text': '5000', 'weight': '4' },
-    { 'fillStyle': '#fd9644', 'text': '200', 'weight': '100' },
-    { 'fillStyle': '#fed330', 'text': '1000', 'weight': '20' },
-    { 'fillStyle': '#26de81', 'text': '400', 'weight': '50' },
-    { 'fillStyle': '#2bcbba', 'text': '2000', 'weight': '10' },
-    { 'fillStyle': '#d1d8e0', 'text': '200', 'weight': '100' },
-    { 'fillStyle': '#45aaf2', 'text': '1000', 'weight': '20' },
-    { 'fillStyle': '#778ca3', 'text': '400', 'weight': '50' }
+    { 'text': '5000', 'weight': '4' },
+    { 'text': '200', 'weight': '100' },
+    { 'text': '1000', 'weight': '20' },
+    { 'text': '400', 'weight': '50' },
+    { 'text': '2000', 'weight': '10' },
+    { 'text': '200', 'weight': '100' },
+    { 'text': '1000', 'weight': '20' },
+    { 'text': '400', 'weight': '50' }
 ];
+
+// wheell Click Sound
+let wheellClickSound = new Audio('assets/sounds/wheel-click.mp3');
+// wheell Finish sound
+let wheellFinishSounds = new Audio('assets/sounds/wheel-landing.mp3');
 // wheel pin
 var whellPin = document.querySelector('.wheelPin');
 // winContainer  
 var winContainer = document.querySelector(".winContainer");
-// confetti
-var confetti = document.getElementById("confetti");
 // startGame 
 var startGame = document.querySelector(".startGameFunc");
 // canvasBox
@@ -23,47 +26,98 @@ var canvasBox = document.querySelector(".canvasBox");
 var messageHeader = document.querySelector(".messageHeader");
 // userCredits
 var userCredits = document.querySelector(".userCredits");
-// playAgainFunc
-var playAgainFunc = document.querySelector(".playAgainFunc");
-// count down
-var countDown = document.getElementById("countDown");
+// spin_button
+var spin_button = document.getElementById("spin_button");
+// wheelCont
+var wheelCont = document.querySelector(".wheelCont");
+// wheel
+var wheel = document.querySelector(".wheel");
+// confetti
+const confetti = document.getElementById('confetti');
 
-// Create new wheel object specifying the parameters at creation time.
-let theWheel = new Winwheel({
-    'outerRadius': 212,        // Set outer radius so wheel fits inside the background.
-    'innerRadius': 0,         // Make wheel hollow so segments don't go all way to center.
-    'textFontSize': 24,         // Set default font size for the segments.
-    'textOrientation': 'vertical', // Make text vertial so goes down from the outside of wheel.
-    'textAlignment': 'outer',    // Align text to outside of wheel.
-    'numSegments': 8,         // Specify number of segments.
-    'responsive'   : true,  // This wheel is responsive!
-    'segments': segments,   // set segments 
-    'animation':           // Specify the animation to use.
-    {
-        'type': 'spinToStop',
-        'duration': 5,    // Duration in seconds.
-        'spins': 3,     // Default number of complete spins.
-        'callbackFinished': alertPrize,
-        'callbackSound': playSound,   // Function to call when the tick sound is to be triggered.
-        'soundTrigger': 'pin'        // Specify pins are to trigger the sound, the other option is 'segment'.
-    },
-    'pins':				// Turn pins on.
-    {
-        'number': 8,
-        'fillStyle': 'silver',
-        'outerRadius': 4,
+/**
+ * SETTİNGS
+**/
+
+// Wheel animation duraction. second. prefer 10
+var wheelAnimDuraction = 10;
+// wheel is stating
+var spinWheel = false;
+// wheel stop dgrees
+var demoRotete = 40;
+
+/////////////////////// Touch and click events
+
+spin_button.addEventListener("click", startSpin);
+spin_button.addEventListener("touchstart", startSpin);
+startGame.addEventListener("click", goBonusArea);
+startGame.addEventListener("touchstart", goBonusArea);
+
+//////////////////////////////////
+
+wheel.style.animationDuration = wheelAnimDuraction + 's';
+
+// from welcome screen to go bonus go bonus screen  
+function goBonusArea() {
+    canvasBox.style.display = 'block';
+    winContainer.style.display = 'none';
+}
+
+/// wheelspining
+function startSpin() {
+    if (spinWheel === false) {
+        spinWheel = true;
+
+        // animate the wheel of fortune
+        wheel.classList.add("wheelspining");
+
+        // choose slice by weight
+        findSegmentWeight();
+
+        // give animation for passion pin
+        wheelPinAnimation();
+
+        // when the wheel finishes turning
+        setTimeout(() => {
+            afterStopWheel();
+        }, wheelAnimDuraction * 1000);
     }
-});
+}
 
-// start game - Hide messga area show wheel
-startGame.addEventListener("click", function () {
-    // hide messagecontainer
-    winContainer.style.display = "none";
-    // show whell
-    canvasBox.style.display = "block";
-});
+/// after stop wheel spining
+function afterStopWheel() {
+    if (spinWheel === true) {
+        spinWheel = false;
+        //delete animate the wheel of fortune
+        wheel.classList.remove("wheelspining");
+        // When the wheel finishes spinning, it makes a winning sound.
+        wheelFinishSpin();
+        // Show confetti
+        confetti.style.visibility = 'visible';
+        setTimeout(() => {
+            // Show message
+            winContainer.style.display = 'flex';
+        }, "1500");
+        // hide start game btn
+        startGame.style.display = 'none';
+        // ready functions for play again
+        playAgain();
+    }
+}
 
-function calculatePrize() {
+/// prepare the screen to play again
+function playAgain() {
+    setTimeout(() => {
+        confetti.style.visibility = 'hidden';
+        winContainer.style.display = 'none';
+        startGame.style.display = 'inline-block';
+        winContainer.style.display = 'none';
+        console.log('play again');
+    }, "5000");
+}
+
+// calculate by weight of slices
+function findSegmentWeight() {
 
     // Calculate total weight
     const totalWeight = segments.reduce((acc, curr) => acc + parseInt(curr.weight), 0);
@@ -87,219 +141,253 @@ function calculatePrize() {
     // Get the winning segment
     const winningSegment = segments[segmentIndex];
 
-    console.log('Winning segment:', winningSegment.text, segmentIndex);
+    // segment index * 45 ( besacuse our wheel has 45 deg segment) + 22 it means center of segment
+    demoRotete = ((segmentIndex) * 45) + 22;
 
-    // This formula always makes the wheel stop somewhere inside prize 3 at least
-    // 1 degree away from the start and end edges of the segment.
+    // rotaite segment
+    setTimeout(() => {
+        wheelCont.style.transform = "rotate(-" + demoRotete + "deg)";
+    }, "500");
 
-    // Write down the angle of the slice that should gain by weight. Since all angles here have 45, I have given all values 45 degrees and above except the one value.
-    var stopAtDec = 0;
+    // increase and display earned credits on screen
+    countUp(winningSegment.text);
 
-    if (segmentIndex === 0) {
-        stopAtDec = 1;
-    } else {
-        stopAtDec = segmentIndex * 46;
-    }
-
-    let stopAt = (stopAtDec + Math.floor((Math.random() * 43)))
-
-    // Important thing is to set the stopAngle of the animation before stating the spin.
-    theWheel.animation.stopAngle = stopAt;
-
-    // May as well start the spin from here.
-    theWheel.startAnimation();
+    // write in console values to screen for testing
+    console.log('Winning segment:', winningSegment.text, 'Winning segment index:', segmentIndex, 'Winning segment rotate deg:', demoRotete);
 }
 
-// Loads the tick audio sound in to an audio object.
-let audio = new Audio('assets/sounds/wheel-click.mp3');
-
-// This function is called when the sound is to be played.
-function playSound() {
+// pins sound when the wheel is spinning
+function wheelClickSound() {
+    // This function is called when the sound is to be played.
     // Stop and rewind the sound if it already happens to be playing.
-    audio.pause();
-    audio.currentTime = 0;
+    wheellClickSound.pause();
+    wheellClickSound.currentTime = 0;
 
     // Play the sound.
-    audio.play();
+    wheellClickSound.play();
 }
 
-// Vars used by the code in this page to do power controls.
-let wheelPower = 0;
-let wheelSpinning = false;
-let readytoPlay = true;
+// When the wheel finishes spinning, it makes a winning sound.
+function wheelFinishSpin() {
+    // the sound of winning
+    wheellFinishSounds.pause();
+    wheellFinishSounds.currentTime = 0;
 
-// -------------------------------------------------------
-// Click handler for spin button.
-// -------------------------------------------------------
-function startSpin() {
-    // Ensure that spinning can't be clicked again while already running.
-    if (wheelSpinning == false) {
-
-        // ready to play
-        readytoPlay = false;
-
-        //choosing slices based on winning weights
-        calculatePrize();
-
-        // Disable the spin button so can't click again while wheel is spinning.
-        const intervals = [];
-        var counts = 1;
-
-        for (var i = 1; i <= theWheel.animation.spins * theWheel.numSegments * 2; i++) {
-            intervals.push(i * 2);
-        }
-
-        function runAtIntervals(intervalArray, func) {
-            if (intervalArray.length > 0) {
-                const interval = intervalArray.shift();
-                setTimeout(function () {
-                    func();
-                    runAtIntervals(intervalArray, func);
-                }, interval * (theWheel.numSegments * 0.4));
-            }
-        }
-
-        // pin animation
-        function pinAnimationDrution() {
-            whellPin.classList.remove("play");
-            whellPin.style.animationDuration = "0." + counts * 30 + "s";
-            counts = counts * 3;
-        }
-        function pinAnimation() {
-            whellPin.classList.add("play");
-        }
-        runAtIntervals(intervals, pinAnimationDrution);
-        runAtIntervals(intervals, pinAnimation);
-
-        // Begin the spin animation by calling startAnimation on the wheel object.
-        theWheel.startAnimation();
-
-        // Set to true so that power can't be changed and spin button re-enabled during
-        // the current animation. The user will have to reset before spinning again.
-        wheelSpinning = true;
-    }
-
-}
-
-// -------------------------------------------------------
-// Function for reset button.
-// -------------------------------------------------------
-function resetWheel() {
-    readytoPlay = true;
-    theWheel.stopAnimation(false);  // Stop the animation, false as param so does not call callback function.
-    theWheel.rotationAngle = 0;     // Re-set the wheel angle to 0 degrees.
-    theWheel.draw();                // Call draw to render changes to the wheel.
-
-    wheelSpinning = false;          // Reset to false to power buttons and spin can be clicked again.
-    // hide confetti
-    confetti.style.display = "none";
-    // hide message and credits container
-    winContainer.style.display = "none";
-}
-
-// -------------------------------------------------------
-// Called when the spin animation has finished by the callback feature of the wheel because I specified callback in the parameters.
-// -------------------------------------------------------
-function alertPrize(indicatedSegment) {
-    // Just alert to the user what happened.
-    // In a real project probably want to do something more interesting than this with the result.
-    if (indicatedSegment.text == 'LOOSE TURN') {
-        console.log('Sorry but you loose a turn.');
-    } else if (indicatedSegment.text == 'BANKRUPT') {
-        console.log('Oh no, you have gone BANKRUPT!');
-    } else {
-
-        setTimeout(function () {
-            // show confetti
-            confetti.style.display = "block";
-            // show message and credits container
-            winContainer.style.display = "flex";
-            // change message
-            messageHeader.innerHTML = "Congratulations";
-
-            // set play again button
-            playAgainFunc.style.display = "block";
-            // hide play button
-            startGame.style.display = "none";
-            // show confetti canvas
-            runConfetti();
-
-            countUp(indicatedSegment.text);
-        }, 500);
-
-        // win mp3 sounds
-        var audio = new Audio();
-        audio.src = "assets/sounds/wheel-landing.mp3";
-
-        // play mp3
-        audio.play();
-
-        console.log("You have won " + indicatedSegment.text);
-    }
+    // Play the sound.
+    wheellFinishSounds.play();
 }
 
 // Credit Balance in UI rolls up 
 function countUp(value) {
-    let count = 0;
-    let intervalId = setInterval(function () {
+    setTimeout(() => {
 
-        var audio = new Audio();
-        audio.src = "assets/sounds/credits-rollup.mp3";
+        // Change win message
+        messageHeader.innerHTML = 'YOU WON ' + value + ' CREDITS!'
 
-        // play coin up mp3
-        audio.play();
+        let count = 0;
+        let intervalId = setInterval(function () {
 
-        // if value equals cont stop interval
-        if (count >= value) {
-            clearInterval(intervalId);
-            // stop mp3
-            audio.pause();
-            // count down
-            countDownFunc();
+            var audio = new Audio();
+            audio.src = "assets/sounds/credits-rollup.mp3";
 
+            // play coin up mp3
+            audio.play();
+
+            // if value equals cont stop interval
+            if (count >= value) {
+                clearInterval(intervalId);
+                // stop mp3
+                audio.pause();
+            }
+
+            // show user credits in modal
+            userCredits.innerText = count;
+
+            // up count plus 5
+            count = count + 5;
+
+        }, 10);
+    }, (wheelAnimDuraction * 1000) + 1500);
+}
+
+// Wheel Pin animation
+function wheelPinAnimation() {
+
+    // Disable the spin button so can't click again while wheel is spinning.
+    const intervals = [];
+    var counts = 1;
+
+    for (var i = 1; i <= 8 * wheelAnimDuraction; i++) {
+        intervals.push(i * 2);
+    }
+
+    function runAtIntervals(intervalArray, func) {
+        if (intervalArray.length > 0) {
+            const interval = intervalArray.shift();
             setTimeout(function () {
-                if (readytoPlay === false) {
-                    refreshPlay();
-                }
-            }, 5000);
+                func();
+                runAtIntervals(intervalArray, func);
+            }, interval * (8 * 0.35));
         }
+    }
 
-        // show user credits in modal
-        userCredits.innerText = count;
-
-        // up count plus 5
-        count = count + 5;
-
-    }, 10);
+    // pin animation
+    function pinAnimationDrution() {
+        whellPin.classList.remove("play");
+        whellPin.style.animationDuration = "0." + counts * 30 + "s";
+        counts = counts * 3;
+        wheelClickSound();
+    }
+    function pinAnimation() {
+        whellPin.classList.add("play");
+    }
+    runAtIntervals(intervals, pinAnimationDrution);
+    runAtIntervals(intervals, pinAnimation);
 }
 
-// count down countDown
-function countDownFunc() {
-    let count = 5;
+/**
+ *  //////////////////////// Confetti //////////////////////////
+*/
 
-    let countDowninterval = setInterval(function () {
-        count--;
-        if (count === 0) {
-            clearInterval(countDowninterval);
-            countDown.innerText = "0";
-        } else {
-            countDown.innerText = count;
-        }
-    }, 1000);
+const confettiCtx = confetti.getContext('2d');
+let container, confettiElements = [], clickPosition;
+
+// helper
+rand = (min, max) => Math.random() * (max - min) + min;
+
+// params to play with
+const confettiParams = {
+    // number of confetti per "explosion"
+    number: 150,
+    // min and max size for each rectangle
+    size: { x: [5, 20], y: [10, 18] },
+    // power of explosion
+    initSpeed: 25,
+    // defines how fast particles go down after blast-off
+    gravity: 0.65,
+    // how wide is explosion
+    drag: 0.08,
+    // how slow particles are falling
+    terminalVelocity: 6,
+    // how fast particles are rotating around themselves
+    flipSpeed: 0.017,
+};
+const colors = [
+    { front: '#FEDB37', back: '#5d4a1f' },
+    { front: '#FDB931', back: '#FFFFAC' },
+    { front: '#9f7928', back: '#5d4a1f' },
+    { front: '#8A6E2F', back: '#8A6E2F' },
+    { front: '#5d4a1f', back: '#9f7928' },
+    { front: '#FFFFAC', back: '#FDB931' },
+    { front: '#5d4a1f', back: '#FEDB37' },
+];
+
+setupCanvas();
+updateConfetti();
+
+window.addEventListener('resize', () => {
+    setupCanvas();
+    hideConfetti();
+});
+
+// Confetti constructor
+function Conf() {
+    this.randomModifier = rand(-1, 1);
+    this.colorPair = colors[Math.floor(rand(0, colors.length))];
+    this.dimensions = {
+        x: rand(confettiParams.size.x[0], confettiParams.size.x[1]),
+        y: rand(confettiParams.size.y[0], confettiParams.size.y[1]),
+    };
+    this.position = {
+        x: clickPosition[0],
+        y: clickPosition[1]
+    };
+    this.rotation = rand(0, 2 * Math.PI);
+    this.scale = { x: 1, y: 1 };
+    this.velocity = {
+        x: rand(-confettiParams.initSpeed, confettiParams.initSpeed) * 0.4,
+        y: rand(-confettiParams.initSpeed, confettiParams.initSpeed)
+    };
+    this.flipSpeed = rand(0.2, 1.5) * confettiParams.flipSpeed;
+
+    if (this.position.y <= container.h) {
+        this.velocity.y = -Math.abs(this.velocity.y);
+    }
+
+    this.terminalVelocity = rand(1, 1.5) * confettiParams.terminalVelocity;
+
+    this.update = function () {
+        this.velocity.x *= 0.98;
+        this.position.x += this.velocity.x;
+
+        this.velocity.y += (this.randomModifier * confettiParams.drag);
+        this.velocity.y += confettiParams.gravity;
+        this.velocity.y = Math.min(this.velocity.y, this.terminalVelocity);
+        this.position.y += this.velocity.y;
+
+        this.scale.y = Math.cos((this.position.y + this.randomModifier) * this.flipSpeed);
+        this.color = this.scale.y > 0 ? this.colorPair.front : this.colorPair.back;
+    }
 }
 
-// refresh play
-function refreshPlay() {
-    resetWheel();
-    // hide messagecontainer
-    winContainer.style.display = "flex";
-    // show whell
-    canvasBox.style.display = "none";
-    // set play again button
-    playAgainFunc.style.display = "none";
-    // hide play button
-    startGame.style.display = "inline";
-    // set header
-    messageHeader.innerHTML = "Welcome to Wheel of Fortune";
-    return false;
+function updateConfetti() {
+    confettiCtx.clearRect(0, 0, container.w, container.h);
+
+    confettiElements.forEach((c) => {
+        c.update();
+        confettiCtx.translate(c.position.x, c.position.y);
+        confettiCtx.rotate(c.rotation);
+        const width = (c.dimensions.x * c.scale.x);
+        const height = (c.dimensions.y * c.scale.y);
+        confettiCtx.fillStyle = c.color;
+        confettiCtx.fillRect(-0.5 * width, -0.5 * height, width, height);
+        confettiCtx.setTransform(1, 0, 0, 1, 0, 0)
+    });
+
+    confettiElements.forEach((c, idx) => {
+        if (c.position.y > container.h ||
+            c.position.x < -0.5 * container.x ||
+            c.position.x > 1.5 * container.x) {
+            confettiElements.splice(idx, 1)
+        }
+    });
+    window.requestAnimationFrame(updateConfetti);
+}
+
+function setupCanvas() {
+    container = {
+        w: confetti.clientWidth,
+        h: confetti.clientHeight
+    };
+    confetti.width = container.w;
+    confetti.height = container.h;
+}
+
+function addConfetti(e) {
+    const canvasBox = confetti.getBoundingClientRect();
+    if (e) {
+        clickPosition = [
+            e.clientX - canvasBox.left,
+            e.clientY - canvasBox.top
+        ];
+    } else {
+        clickPosition = [
+            canvasBox.width * Math.random(),
+            canvasBox.height * Math.random()
+        ];
+    }
+    for (let i = 0; i < confettiParams.number; i++) {
+        confettiElements.push(new Conf())
+    }
+}
+
+function hideConfetti() {
+    confettiElements = [];
+    window.cancelAnimationFrame(updateConfetti)
+}
+
+confettiLoop();
+function confettiLoop() {
+    addConfetti();
+    setTimeout(confettiLoop, 700 + Math.random() * 1700);
 }
