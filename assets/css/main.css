@@ -227,10 +227,10 @@ body {
 
     .canvasBox {
         background-size: 155vw auto;
-        background-position: 49% -14vw;
+        background-position: 49% -10vw;
         width: 100%;
-        padding: 7vw 10vw 35vw 10vw;
-        overflow-y: hidden;
+        padding: 11vw 10vw 35vw 10vw;
+        overflow: hidden;
     }
 
     .wheelPin {
@@ -241,7 +241,7 @@ body {
         width: 20vw;
         height: 20vw;
         left: 40vw;
-        top: 38vw;
+        top: 41vw;
         font-size: 5vw;
         line-height: 20vw;
     }
